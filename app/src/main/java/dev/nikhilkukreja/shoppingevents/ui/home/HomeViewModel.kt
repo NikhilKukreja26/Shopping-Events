@@ -3,6 +3,7 @@ package dev.nikhilkukreja.shoppingevents.ui.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.nikhilkukreja.shoppingevents.data.entities.ShoppingEvent
 import dev.nikhilkukreja.shoppingevents.data.repositories.ShoppingEventRepository
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,8 +14,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val shoppingEventRepository: ShoppingEventRepository
-): ViewModel() {
+    private val shoppingEventRepository: ShoppingEventRepository,
+) : ViewModel() {
 
     private val _homeUIState = MutableStateFlow<HomeUIState>(HomeUIState())
     val homeUIState: StateFlow<HomeUIState> = _homeUIState.asStateFlow()
@@ -22,10 +23,15 @@ class HomeViewModel @Inject constructor(
     init {
         viewModelScope.launch() {
             shoppingEventRepository.getEvents().collect { events ->
-               _homeUIState.update {
-                   it.copy(events = events)
-               }
+                _homeUIState.update {
+                    it.copy(events = events)
+                }
             }
         }
     }
+
+    suspend fun deleteEvent(event: ShoppingEvent) {
+        shoppingEventRepository.delete(event)
+    }
+
 }

@@ -45,6 +45,7 @@ fun DismissibleItem(
                     showDialog = true
                     return@rememberSwipeToDismissBoxState false
                 }
+
                 SwipeToDismissBoxValue.Settled -> {
                     return@rememberSwipeToDismissBoxState false
 
@@ -57,7 +58,7 @@ fun DismissibleItem(
         }
     )
 
-    if(showDialog)  {
+    if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
             title = { Text("Delete") },
@@ -65,10 +66,10 @@ fun DismissibleItem(
             confirmButton = {
                 IconButton(
                     onClick = {
-                    showDialog = false
-                    dismissItem = true
-                    onDelete()
-                }
+                        showDialog = false
+                        dismissItem = true
+                        onDelete()
+                    }
                 ) {
                     Icon(Icons.Default.Done, contentDescription = "Delete")
                 }
@@ -76,9 +77,9 @@ fun DismissibleItem(
             dismissButton = {
                 IconButton(
                     onClick = {
-                    showDialog = false
-                    dismissItem = false
-                }
+                        showDialog = false
+                        dismissItem = false
+                    }
                 ) {
                     Icon(Icons.Default.Close, contentDescription = "Close")
                 }
@@ -86,7 +87,7 @@ fun DismissibleItem(
         )
     }
 
-    if(dismissItem) {
+    if (dismissItem) {
         LaunchedEffect(Unit) {
             dismissState.dismiss(SwipeToDismissBoxValue.EndToStart)
         }
@@ -98,7 +99,7 @@ fun DismissibleItem(
         enableDismissFromStartToEnd = false,
         backgroundContent = {
             val backgroundColor by animateColorAsState(
-                when(dismissState.targetValue) {
+                when (dismissState.targetValue) {
                     SwipeToDismissBoxValue.StartToEnd -> Color.Transparent
                     SwipeToDismissBoxValue.EndToStart -> Color.Red
                     SwipeToDismissBoxValue.Settled -> Color.LightGray

@@ -94,4 +94,11 @@ class EventDetailsViewModel @Inject constructor(
         val item = itemDetails.toShoppingItem()
         shoppingItemRepository.update(item)
     }
+
+    suspend fun deleteShoppingItem(
+        itemDetails: ItemDetails
+
+    ) {
+        shoppingItemRepository.delete(itemDetails.toShoppingItem())
+    }
 }

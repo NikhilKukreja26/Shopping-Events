@@ -40,8 +40,8 @@ fun EventDetailsPage(
     modifier: Modifier = Modifier,
     navigateUp: () -> Unit,
     navigateBack: () -> Unit,
-    eventDetailsViewModel: EventDetailsViewModel = hiltViewModel()
-    ) {
+    eventDetailsViewModel: EventDetailsViewModel = hiltViewModel(),
+) {
     val eventDetailsUIState by eventDetailsViewModel.eventDetailsUIState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
     val lazyListState = rememberLazyListState()
@@ -58,13 +58,13 @@ fun EventDetailsPage(
                 onClick = {
                     coroutineScope.launch {
                         eventDetailsViewModel.addItem()
-                        if(eventDetailsUIState.itemList.isNotEmpty()) {
+                        if (eventDetailsUIState.itemList.isNotEmpty()) {
                             lazyListState.animateScrollToItem(eventDetailsUIState.itemList.size - 1)
                         }
                     }
                 },
             ) {
-                Icon(Icons.Default.Add,contentDescription = null)
+                Icon(Icons.Default.Add, contentDescription = null)
                 Text(
                     text = "Add Item",
                 )
@@ -73,13 +73,13 @@ fun EventDetailsPage(
         }
     ) {
 
-       if(eventDetailsUIState.itemList.isEmpty()) {
-           EmptyListUI(
-               message = "No items found\nAdd an item to get started",
-               modifier = modifier.padding(it),
-           )
-           return@Scaffold
-       }
+        if (eventDetailsUIState.itemList.isEmpty()) {
+            EmptyListUI(
+                message = "No items found\nAdd an item to get started",
+                modifier = modifier.padding(it),
+            )
+            return@Scaffold
+        }
 
         ShoppingItemList(
             modifier = modifier.padding(it),
@@ -88,11 +88,16 @@ fun EventDetailsPage(
             lazyListState = lazyListState,
             onEditModeChanged = eventDetailsViewModel::onEditModeChanged,
             onValueChanged = eventDetailsViewModel::onValueChanged,
-            onItemUpdate = {
+            onItemUpdate = {itemDetails ->
                 coroutineScope.launch {
-                    eventDetailsViewModel.updateItem(it)
+                    eventDetailsViewModel.updateItem(itemDetails)
                 }
             },
+            onDeleteItem = { itemDetails ->
+                coroutineScope.launch {
+                    eventDetailsViewModel.deleteShoppingItem(itemDetails)
+                }
+            }
         )
     }
 }
@@ -106,6 +111,7 @@ fun ShoppingItemList(
     onEditModeChanged: (ItemDetails) -> Unit,
     onValueChanged: (ItemDetails) -> Unit,
     onItemUpdate: (ItemDetails) -> Unit,
+    onDeleteItem: (ItemDetails) -> Unit,
 ) {
     LazyColumn(
         modifier = modifier,
@@ -132,15 +138,17 @@ fun ShoppingItemList(
 
             )
         }
-        items(itemList,
-        key = {item -> item.itemDetails.itemId})
-        {itemUIState ->
+        items(
+            itemList,
+            key = { item -> item.itemDetails.itemId })
+        { itemUIState ->
             SingleListItem(
                 modifier = modifier,
                 itemUIState = itemUIState,
                 onValueChanged = onValueChanged,
                 onItemUpdate = onItemUpdate,
                 onEditModeChanged = onEditModeChanged,
+                onDeleteItem = onDeleteItem
             )
         }
         item {
@@ -155,9 +163,10 @@ fun SingleListItem(
     itemUIState: ItemUIState,
     onValueChanged: (ItemDetails) -> Unit,
     onItemUpdate: (ItemDetails) -> Unit,
+    onDeleteItem: (ItemDetails) -> Unit,
     onEditModeChanged: (ItemDetails) -> Unit,
 ) {
-    if(itemUIState.isEdit) {
+    if (itemUIState.isEdit) {
         EditListItem(
             modifier = modifier,
             itemDetails = itemUIState.itemDetails,
@@ -166,7 +175,9 @@ fun SingleListItem(
         )
     } else {
         DismissibleItem(
-            onDelete = {},
+            onDelete = {
+                onDeleteItem(itemUIState.itemDetails)
+            },
         ) {
             ListItem(
                 leadingContent = {

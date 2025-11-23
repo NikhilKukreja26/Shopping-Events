@@ -22,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -29,6 +30,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import dev.nikhilkukreja.shoppingevents.customcomposables.ShoppingAppbar
 import dev.nikhilkukreja.shoppingevents.data.entities.ShoppingEvent
 import dev.nikhilkukreja.shoppingevents.customcomposables.EmptyListUI
+import kotlinx.coroutines.launch
 
 @Composable
 fun HomePage(
@@ -39,6 +41,9 @@ fun HomePage(
     ) {
 
     val homeUIState by viewModel.homeUIState.collectAsState()
+
+    val scope = rememberCoroutineScope()
+
 
     Scaffold(
         topBar = {
@@ -68,6 +73,11 @@ fun HomePage(
             shoppingEvents = homeUIState.events,
             modifier = modifier.padding(it),
             onNavigateToEventDetails = onNavigateToEventDetails,
+            onDeleteEvent = {event ->
+                scope.launch {
+                    viewModel.deleteEvent(event)
+                }
+            },
 
         )
 
@@ -79,6 +89,7 @@ fun ShoppingList(
     modifier: Modifier = Modifier,
     shoppingEvents: List<ShoppingEvent>,
     onNavigateToEventDetails : (Long, String) -> Unit,
+    onDeleteEvent : (ShoppingEvent) -> Unit,
 ) {
     LazyColumn(
         modifier = modifier,
@@ -87,6 +98,7 @@ fun ShoppingList(
             ShoppingEvent(
                 shoppingEvent = event,
                 onTapEvent = onNavigateToEventDetails,
+                onDeleteEvent = onDeleteEvent
             )
         }
     }
@@ -97,6 +109,7 @@ fun ShoppingEvent(
     modifier: Modifier = Modifier,
     shoppingEvent: ShoppingEvent,
     onTapEvent : (Long, String) -> Unit,
+    onDeleteEvent : (ShoppingEvent) -> Unit,
 ) {
     ListItem(
         modifier = modifier.padding(8.dp).clickable {
@@ -117,7 +130,9 @@ fun ShoppingEvent(
         },
         leadingContent = {
             IconButton(
-                onClick = {}
+                onClick = {
+                    onDeleteEvent(shoppingEvent)
+                }
             ) {
                 Icon(Icons.Filled.Delete, contentDescription = "Delete")
             }
